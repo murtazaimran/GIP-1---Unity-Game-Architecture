@@ -1,25 +1,24 @@
 using UnityEngine;
 
-public abstract class AbilityBase : MonoBehaviour, IAbility
+public abstract class AbilityBase : MonoBehaviour
 {
-    [SerializeField] protected AbilityConfig config;
+    private float cooldownTimer;
 
-    private float nextAvailableTime;
-
-    public bool CanUse => Time.time >= nextAvailableTime;
-
-    public float RemainingCooldown =>
-        Mathf.Max(0f, nextAvailableTime - Time.time);
-
-    public void Use()
+    protected bool CanUse()
     {
-        if (!CanUse)
-            return;
-
-        Execute();
-
-        nextAvailableTime = Time.time + config.Cooldown;
+        return cooldownTimer <= 0f;
     }
 
-    protected abstract void Execute();
+    protected void StartCooldown(float duration)
+    {
+        cooldownTimer = duration;
+    }
+
+    protected virtual void Update()
+    {
+        if (cooldownTimer > 0f)
+        {
+            cooldownTimer -= Time.deltaTime;
+        }
+    }
 }

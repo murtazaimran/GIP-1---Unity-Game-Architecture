@@ -1,46 +1,58 @@
 using System;
 using UnityEngine;
 
-public class HealthComponent : MonoBehaviour, IDamageable
+public class HealthComponent : MonoBehaviour
 {
-    [SerializeField] private HealthConfig config;
+    [SerializeField]
+    private float maxHealth = 100f;
 
-    public float CurrentHealth { get; private set; }
-    public float MaxHealth => config.MaxHealth;
+    private float currentHealth;
 
-    public bool IsAlive => CurrentHealth > 0;
+    public float CurrentHealth => currentHealth;
+    public float MaxHealth => maxHealth;
 
-    public event Action<float, float> HealthChanged;    // event for health change  
-    
-    public event Action Died;
+    public event Action<float, float> OnHealthChanged;
 
     private void Awake()
     {
-        CurrentHealth = MaxHealth;
+        currentHealth = maxHealth;
+    }
+
+    private void Start()
+    {
+        // Notify listeners of the initial health state.
+        OnHealthChanged?.Invoke(currentHealth, maxHealth);
     }
 
     public void TakeDamage(float amount)
     {
-        if (!IsAlive || amount <= 0)
+        if (amount <= 0f)
             return;
 
-        CurrentHealth = Mathf.Max(0, CurrentHealth - amount);
+        currentHealth -= amount;
+        currentHealth = Mathf.Max(currentHealth, 0f);
 
-        HealthChanged?.Invoke(CurrentHealth, MaxHealth);
+        Debug.Log(
+            $"{gameObject.name} took {amount} damage. " +
+            $"Health: {currentHealth}/{maxHealth}"
+        );
 
-        if (CurrentHealth <= 0)
-        {
-            Died?.Invoke();
-        }
+        OnHealthChanged?.Invoke(currentHealth, maxHealth);
     }
 
     public void Heal(float amount)
     {
-        if (!IsAlive || amount <= 0)
+        if (amount <= 0f)
             return;
 
-        CurrentHealth = Mathf.Min(MaxHealth, CurrentHealth + amount);
+        currentHealth += amount;
+        currentHealth = Mathf.Min(currentHealth, maxHealth);
 
-        HealthChanged?.Invoke(CurrentHealth, MaxHealth);
+        Debug.Log(
+            $"{gameObject.name} healed {amount}. " +
+            $"Health: {currentHealth}/{maxHealth}"
+        );
+
+        OnHealthChanged?.Invoke(currentHealth, maxHealth);
     }
 }

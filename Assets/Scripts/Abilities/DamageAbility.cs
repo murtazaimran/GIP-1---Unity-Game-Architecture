@@ -2,21 +2,28 @@ using UnityEngine;
 
 public class DamageAbility : AbilityBase
 {
-    private GameObject target;
+    [SerializeField]
+    private DamageAbilityConfig config;
 
-    public void SetTarget(GameObject target)
+    public void Use(HealthComponent target)
     {
-        this.target = target;
-    }
-
-    protected override void Execute()
-    {
-        if (target == null)
+        if (!CanUse())
             return;
 
-        if (target.TryGetComponent<IDamageable>(out var damageable))
+        if (target == null)
         {
-            damageable.TakeDamage(config.Damage);
+            Debug.LogWarning("DamageAbility has no target.");
+            return;
         }
+
+        if (config == null)
+        {
+            Debug.LogError("DamageAbilityConfig has not been assigned.");
+            return;
+        }
+
+        target.TakeDamage(config.damageAmount);
+
+        StartCooldown(config.cooldown);
     }
 }
