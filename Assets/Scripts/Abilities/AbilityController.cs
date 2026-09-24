@@ -11,13 +11,29 @@ public class AbilityController : MonoBehaviour
 
     private HealthComponent currentTarget;
 
+    private TargetingSystem targetingSystem;
+
+    private void Awake()
+    {
+        targetingSystem = GetComponent<TargetingSystem>();
+
+        if (targetingSystem == null)
+        {
+            Debug.LogError(
+                "AbilityController could not find TargetingSystem."
+            );
+        }
+    }
+
     public void SetTarget(HealthComponent target)
     {
         currentTarget = target;
 
         if (currentTarget != null)
         {
-            Debug.Log($"Target set to: {currentTarget.gameObject.name}");
+            Debug.Log(
+                $"Target set to: {currentTarget.gameObject.name}"
+            );
         }
     }
 
@@ -34,9 +50,15 @@ public class AbilityController : MonoBehaviour
             return;
         }
 
+        // Find the current target dynamically.
+        if (targetingSystem != null)
+        {
+            targetingSystem.UpdateTarget();
+        }
+
         if (currentTarget == null)
         {
-            Debug.LogWarning("No target selected.");
+            Debug.LogWarning("No target found.");
             return;
         }
 
